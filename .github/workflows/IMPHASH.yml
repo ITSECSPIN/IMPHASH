@@ -1,0 +1,38 @@
+
+name: Import IMPHASH file from external source
+
+on:
+  workflow_dispatch: # Manual trigger
+  schedule:
+    - cron: "5 0 * * *" # Runs daily at 00:05 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  import-imphash:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Download IMPHASH file
+        run: |
+          mkdir -p IMPHASH
+          curl -s -o IMPHASH/LoadsDespiteHVCI.samples_malicious.imphash \
+            https://raw.githubusercontent.com/magicsword-io/LOLDrivers/refs/heads/main/detections/hashes/LoadsDespiteHVCI.samples_malicious.imphash
+          echo "Downloaded IMPHASH file into IMPHASH directory"
+
+      - name: Commit and push changes
+        run: |
+          git add IMPHASH/LoadsDespiteHVCI.samples_malicious.imphash
+          git commit -m "Imported IMPHASH file from external source"
+          git push origin main
